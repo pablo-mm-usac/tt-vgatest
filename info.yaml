@@ -16,7 +16,7 @@ project:
   
   # List your project's source files here. Source files must be in ./src and you must list each source file separately, one per line:
   source_files:
-    - "project.v"
+    - "tt_um_pablo_mm_usac_pruebavga.v"
     - "hvsync_generator.v"
     - "palette.v"
     - "bitmap_rom.v"

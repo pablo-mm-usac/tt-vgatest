@@ -7,13 +7,9 @@
 
 `default_nettype none
 
-parameter LOGO_SIZE = 128;
-parameter DISPLAY_WIDTH = 640;
-parameter DISPLAY_HEIGHT = 480;
-
 `define COLOR_WHITE 3'd7
 
-module tt_um_vga_example (
+module tt_um_pablo_mm_usac_pruebavga (
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
     input  wire [7:0] uio_in,
@@ -23,6 +19,10 @@ module tt_um_vga_example (
     input  wire       clk,
     input  wire       rst_n
 );
+
+  localparam LOGO_SIZE = 128;
+  localparam DISPLAY_WIDTH = 640;
+  localparam DISPLAY_HEIGHT = 480;
 
   // VGA
   wire hsync;

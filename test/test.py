@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, FallingEdge
 
 import os
 import glob
@@ -10,7 +10,6 @@ from PIL import Image, ImageChops
 
 @cocotb.test()
 async def test_project(dut):
-cocotb.pass_test()
     # Set clock period to 40 ns (25 MHz)
     CLOCK_PERIOD = 40
 
@@ -56,8 +55,10 @@ cocotb.pass_test()
     dut.uio_in.value = 0
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 10)
+    await FallingEdge(dut.clk)
     dut.rst_n.value = 1
-    await ClockCycles(dut.clk, 2)
+    # The first active rising edge registers RGB and sync for pixel (0, 0).
+    await FallingEdge(dut.clk)
 
     # Define some functions for capturing lines & frames
 
@@ -67,7 +68,7 @@ cocotb.pass_test()
             vsync = int(dut.uo_out.value[3])
             assert hsync == (0 if H_SYNC_START <= i < H_SYNC_END else 1), "Unexpected hsync pattern"
             assert vsync == expected_vsync, "Unexpected vsync pattern"
-            await ClockCycles(dut.clk, 1)
+            await FallingEdge(dut.clk)
 
     async def capture_line(framebuffer, offset):
         for i in range(H_TOTAL):
@@ -77,7 +78,7 @@ cocotb.pass_test()
             assert vsync == 1, "Unexpected vsync pattern"
             if i < H_DISPLAY:
                 framebuffer[offset+3*i:offset+3*i+3] = palette[int(dut.uo_out.value)]
-            await ClockCycles(dut.clk, 1)
+            await FallingEdge(dut.clk)
 
     async def skip_frame(frame_num):
         dut._log.info(f"Skipping frame {frame_num}")
@@ -113,9 +114,8 @@ cocotb.pass_test()
         frame.save(f"output/frame{i}.png")
 
 
-@cocotb.test()
+@cocotb.test(skip=not os.path.isdir("reference"))
 async def compare_reference(dut):
-cocotb.pass_test()
     for img in glob.glob("output/frame*.png"):
         basename = img.removeprefix("output/")
         dut._log.info(f"Comparing {basename} to reference image")
